@@ -4,8 +4,6 @@
 '''
 import sys
 import copy
-import numpy as np
-from scipy.ndimage import rotate
 
 def getFilename():
     argc = len(sys.argv)
@@ -60,16 +58,25 @@ def part1(data):
 
 def part2(data):
     result = 0
+    max_rows=len(data)
+    max_cols=len(data[0])
+    for row in range(1,(max_rows-1)):
+        for col in range(1,(max_cols-1)):
+            if data[row][col] == 'A':
+                d_1 = data[row-1][col-1]+data[row][col]+data[row+1][col+1]
+                d_2 = data[row+1][col-1]+data[row][col]+data[row-1][col+1]
+                if (d_1 == 'MAS' or d_1 == 'SAM') and (d_2 == 'MAS' or d_2 == 'SAM'):
+                    result+=1
     return result
 
 def main():
     filename = getFilename()
     data = parseFile(filename)
 
-    part1_result =part1(data)
-    print(part1_result)
+    #part1_result =part1(data)
+    #print(part1_result)
     
-    #part2_result = part2(data)
-    #print(part2_result)
+    part2_result = part2(data)
+    print(part2_result)
 
 main()
