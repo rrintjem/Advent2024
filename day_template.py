@@ -16,13 +16,13 @@ def parseFile(filename):
 
     data = f.read()
 
-    reports = []
+    rows = []
     for line in f:
         data = line.split(' ')
         data = [int(d) for d in data]
-        reports.append(data)
+        rows.append(data)
 
-    return reports
+    return rows
 
 def part1(data):
     result = 0
