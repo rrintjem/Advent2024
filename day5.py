@@ -4,6 +4,7 @@
 '''
 import sys
 import copy
+from functools import cmp_to_key
 
 def getFilename():
     argc = len(sys.argv)
@@ -47,9 +48,7 @@ def part1(data):
     rules = [[int(r) for r in d.split('|')]  for d in data[0].split('\n')]
     updates = [[int(u) for u in d.split(',')] for d in data[1].split('\n')] 
 
-    #distinct_rules = [int(d) for d in list(dict.fromkeys(data[0].replace('\n','|').split('|')))]
     rules_dict = create_rules(rules)
-
 
     for row in updates:
         valid = True
@@ -77,16 +76,51 @@ def part1(data):
 
 def part2(data):
     result = 0
+    rules = [[int(r) for r in d.split('|')]  for d in data[0].split('\n')]
+    updates = [[int(u) for u in d.split(',')] for d in data[1].split('\n')] 
+
+    rules_dict = create_rules(rules)
+
+    for row in updates:
+        valid = True
+        for i in row:
+            num_rule = rules_dict[str(i)]
+            for b in num_rule["before"]:
+                if b not in row:
+                    continue
+                if row.index(b)<row.index(i):
+                    valid = False
+                    break
+            if valid:
+                for a in num_rule["after"]:
+                    if a not in row:
+                        continue
+                    if row.index(a)>row.index(i):
+                        valid = False
+                        break
+            if valid == False:
+                break
+        if valid == False:
+            row = sorted(row, key=cmp_to_key(lambda x,y:rule_cmp(rules_dict[str(x)],y)))
+            result = result + row[int((len(row)-1)/2)]
     return result
+
+def rule_cmp(rule,cmp):
+    if cmp in rule["before"]:
+        return -1
+    elif cmp in rule["after"]:
+        return 1
+    return 0
+
 
 def main():
     filename = getFilename()
     data = parseFile(filename)
 
-    part1_result =part1(data)
-    print(part1_result)
+    #part1_result =part1(data)
+    #print(part1_result)
 
-    #part2_result = part2(data)
-    #print(part2_result)
+    part2_result = part2(data)
+    print(part2_result)
 
 main()
