@@ -25,7 +25,7 @@ def parseFile(filename):
     return rows
 
 def part1(data):
-    result = 0
+    result = data
     
     return result
 

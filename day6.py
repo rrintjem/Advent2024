@@ -7,9 +7,9 @@ import numpy as np
 
 def getFilename():
     argc = len(sys.argv)
-    filename = 'input.txt'
+    filename = 'input_6.txt'
     if argc > 1:
-        filename = 'test_input.txt'
+        filename = 'test_input_6.txt'
     return filename
 
 def parseFile(filename):
