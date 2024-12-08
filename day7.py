@@ -35,12 +35,22 @@ def getOperatorCombos(eqn):
     
 
     return res
+
+def getOperatorCombos2(num_operators):
+    ops = ['+','*','|']
+    res = []
+
+    res = [''.join(i) for i in itertools.product(ops, repeat = num_operators)]
     
+    return res  
+  
 def calculate(num1,num2,operator):
     if operator == '+':
         return num1 + num2
-    else:
+    elif operator =='*':
         return num1 * num2
+    else:
+        return int(str(num1)+''+str(num2))
 
 def part1(data):
     result = 0
@@ -80,16 +90,36 @@ def part1(data):
 
 def part2(data):
     result = 0
+
+    for row in data:
+       # print(row)
+        indexes = [i for i, ltr in enumerate(row[1]) if ltr == ' ']
+        num_operators = row[1].count(' ')
+        combos = getOperatorCombos2(num_operators)
+        
+        row_list = [int(d) for d in row[1].split(' ')] 
+
+        
+        for c in combos:
+            c = list(c)
+            row_calc = row_list[0]
+            for index in range(1,len(row_list)):
+                row_calc = calculate(row_calc,row_list[index],c[index-1])
+            # print('     '+str(row_calc)+" = "+str(row_list)+" "+str(c))
+            if row_calc == row[0]:
+                result = result + row[0]
+                break
+
     return result
 
 def main():
     filename = getFilename()
     data = parseFile(filename)
 
-    part1_result =part1(data)
-    print(part1_result)
+    #part1_result =part1(data)
+    #print(part1_result)
 
-    #part2_result = part2(data)
-    #print(part2_result)
+    part2_result = part2(data)
+    print(part2_result)
 
 main()
