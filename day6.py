@@ -3,6 +3,7 @@
 
 '''
 import sys
+import copy
 import numpy as np
 
 def getFilename():
@@ -37,7 +38,8 @@ def walkPath(row,i):
     curr = row[i]
     guard_exit = False
     while curr != '#':
-        row[i] = 'X'
+        if row[i] != '*':
+            row[i] = 'X'
         i+=1
         if i >= len(row):
             guard_exit = True
@@ -46,26 +48,6 @@ def walkPath(row,i):
             curr = row[i]
     row[i-1] = '^'
     return row,guard_exit
-
-def walkPath2(row,i):
-    row[i] = '+'
-    curr = row[i]
-    loop_achieved = False
-    while curr != '#':
-        i+=1
-        if i >= len(row):
-            guard_exit = True
-            return row, guard_exit
-        else:
-            curr = row[i]
-    if row[i-1] == '+':
-        loop_achieved = True
-    row[i-1] = '^'
-    return row,guard_exit
-def printGrid(data):
-    for row in data:
-        row_str = ''.join(row)
-        print(row_str+"\n")
 
 def rotate_left(data):
     data = list(zip(*data[::-1]))
@@ -96,23 +78,127 @@ def part1(data):
 
     return result
 
+def getPath(data):
+    path_coords = []
+
+    walk_dir = 'UP'
+    row,col = findGuard(data)
+    guard_gone = False
+
+    max_rows = len(data)
+    max_cols = len(data[0])
+
+    while guard_gone == False:
+        data[row][col] = 'X'
+        
+        #check next spot
+        if walk_dir == 'UP':
+            row = row-1
+        elif walk_dir == 'RIGHT':
+            col = col+1
+        elif walk_dir == 'DOWN':
+            row = row+1
+        else:
+            col = col-1
+        
+        if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
+            guard_gone = True 
+            break
+        #check for collision and change direction 
+        if data[row][col] == '#':
+            if walk_dir == 'UP':
+                row = row+1
+                col = col+1
+                walk_dir = 'RIGHT'
+            elif walk_dir == 'RIGHT':
+                col = col-1
+                row = row+1
+                walk_dir = 'DOWN'
+            elif walk_dir == 'DOWN':
+                row = row-1
+                col = col -1 
+                walk_dir = 'LEFT'
+            else:
+                col = col + 1
+                row = row-1
+                walk_dir = 'UP'
+        if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
+            guard_gone = True 
+            break
+    for y,row in enumerate(data):
+        for x,col in enumerate(row):
+            if col == 'X':
+                path_coords.append((y,x))
+    return path_coords
+
+def checkForLoop(data,row,col):
+    walk_dir = 'UP'
+
+    max_rows = len(data)
+    max_cols = len(data[0])
+
+    visited = {}
+
+    max_loops = 100000
+    loop_count = 0
+
+    while loop_count < max_loops:
+        #check next spot
+        loop_count+=1
+
+        prev = (row,col)
+        if walk_dir == 'UP':
+            row = row-1
+        elif walk_dir == 'RIGHT':
+            col = col+1
+        elif walk_dir == 'DOWN':
+            row = row+1
+        else:
+            col = col-1
+        
+        if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
+            return False
+        #check for collision and change direction 
+        if data[row][col] == '#':
+            if prev in visited.keys():
+                if walk_dir in visited[prev]:
+                    return True
+                else:
+                    visited[prev].append(walk_dir)
+            else:
+                visited[prev]=[walk_dir]
+
+            if walk_dir == 'UP':
+                row = row+1
+                walk_dir = 'RIGHT'
+            elif walk_dir == 'RIGHT':
+                col = col-1
+                walk_dir = 'DOWN'
+            elif walk_dir == 'DOWN':
+                row = row-1
+                walk_dir = 'LEFT'
+            else:
+                col = col + 1
+                walk_dir = 'UP'
+        
+        if row < 0 or row >= max_rows or col < 0 or col >= max_cols:
+            return False
+    return True
+
 def part2(data):
     result = 0
     
-    #rotate grid to the right 
-    data = list(zip(*data[::-1]))
-    data = [list(d) for d in data]
-    guard_gone = False
-    firstPos = True
+    #get initial guard position
+    row,col = findGuard(data)
+    path_coords = getPath(copy.deepcopy(data))
 
-    while guard_gone == False:
-        row,col = findGuard(data)
-        data[row],guard_gone = walkPath2(data[row],col)
-        if firstPos: 
-            data[row][col] = 'X'
-            firstPos = False
-        data = rotate_left(data)
-    printGrid(data)
+    for coord in path_coords:
+        temp = copy.deepcopy(data)
+        temp[coord[0]][coord[1]] = '#'
+
+        if checkForLoop(temp,row,col):
+            result+=1
+    
     return result
 
 def main():
@@ -123,6 +209,8 @@ def main():
     #print(part1_result)
 
     part2_result = part2(data)
+    if part2_result >= 2358:
+        part2_result = 'incorrect: too high'
     print(part2_result)
 
 main()
