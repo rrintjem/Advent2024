@@ -64,18 +64,46 @@ def part1(data):
 
     return result
 
+def countTrails2(data,row,col,val):
+
+    total = 0
+    if val == 9:
+        return 1
+
+    #check Up
+    if row > 0 and data[row-1][col] == val+1 :
+        total = total+countTrails2(data,row-1,col,val+1)
+    #check Down
+    if row < len(data)-1 and data[row+1][col] == val+1 :
+        total = total+countTrails2(data,row+1,col,val+1)
+    #check Left
+    if col > 0 and data[row][col-1] == val+1 :
+        total = total+countTrails2(data,row,col-1,val+1)
+    #check Right
+    if col < len(data[0])-1 and data[row][col+1] == val+1 :
+        total = total+countTrails2(data,row,col+1,val+1)
+
+    return total
+
 def part2(data):
     result = 0
+    for row in range(len(data)):
+        for col in range(len(data[row])):
+            if data[row][col] == 0:
+                res = 0
+                res = countTrails2(data,row,col,data[row][col])
+                result +=res
+
     return result
 
 def main():
     filename = getFilename()
     data = parseFile(filename)
 
-    part1_result =part1(data)
-    print(part1_result)
+    #part1_result =part1(data)
+    #print(part1_result)
 
-    #part2_result = part2(data)
-    #print(part2_result)
+    part2_result = part2(data)
+    print(part2_result)
 
 main()
