@@ -75,16 +75,35 @@ def part1(data):
 
 def part2(data):
     result = 0
+    mod = 10000000000000
+
+    x, y = symbols('x y')
+
+    for d in data:
+        '''
+        x*a[0] + y*b[0] - p[0] 
+        and x*a[1] + y*b[1] - p[1]
+        '''
+        
+        eq1 = Eq((x*d['a'][0]) + (y*d['b'][0]), (d['p'][0]+mod))
+        eq2 = Eq((x*d['a'][1]) + (y*d['b'][1]), (d['p'][1]+mod))
+        solution = solve((eq1,eq2), (x, y))
+
+
+        if '/' in str(solution[x]) or '/' in str(solution[y]):
+            continue
+        else:
+            result = result + (A_COST*solution[x]) + (B_COST*solution[y])
     return result
 
 def main():
     filename = getFilename()
     data = parseFile(filename)
 
-    part1_result =part1(data)
-    print(part1_result)
+    #part1_result =part1(data)
+    #print(part1_result)
 
-    #part2_result = part2(data)
-    #print(part2_result)
+    part2_result = part2(data)
+    print(part2_result)
 
 main()
