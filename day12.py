@@ -4,11 +4,29 @@
 '''
 import sys
 import copy
-import itertools
+from queue import Queue
 
 borders = {}
-areas = {}
 cache =[]
+
+def bfs(maze, start, end):
+    queue = Queue()
+    queue.put([start])  # Enqueue the start position
+
+    while not queue.empty():
+        path = queue.get()  # Dequeue the path
+        x, y = path[-1]     # Current position is the last element of the path
+
+        if (x, y) == end:
+            return path  # Return the path if end is reached
+
+        for dx, dy in [(1,0), (0,1), (-1,0), (0,-1)]:  # Possible movements
+            next_x, next_y = x + dx, y + dy
+            if maze[next_x][next_y] != '#' and (next_x, next_y) not in path:
+                new_path = list(path)
+                new_path.append((next_x, next_y))
+                queue.put(new_path)  # Enqueue the new path
+
 
 def getFilename():
     argc = len(sys.argv)
@@ -32,10 +50,6 @@ def get_perimeters(data):
     for y,row in enumerate(data):
         new_row = []
         for x,col in enumerate(row):
-            if col in areas.keys():
-                areas[col].append((y,x))
-            else:
-                areas[col] = [(y,x)]
             if y != 0 and y!= len(data)-1 and x != 0 and x!= len(row)-1 and data[y-1][x] == col and data[y+1][x] == col and data[y][x-1] == col and data[y][x+1] == col:
                 new_row.append('.')
                 borders[(y,x)]=0
@@ -54,49 +68,6 @@ def get_perimeters(data):
         perimiter.append(new_row)
 
     return perimiter
-
-def print_grid(data):
-    for row in data:
-        print(''.join(row))
-
-def getRanges(data):
-    s = e = None
-    r = []
-    for i in sorted(data):
-        if s is None:
-            s = e = i
-        elif i == e or i == e + 1:
-            e = i
-        else:
-            r.append((s, e))
-            s = e = i
-    if s is not None:
-        r.append((s, e))
-    return r
-
-def getAreas():
-    new_areas={}
-    area_ids = areas.keys()
-    for i in area_ids:
-        distinct_areas =[]
-        y_range = []
-
-        for c in areas[i]:
-            y_range.append(c[0])
-        y_range = getRanges(list(set(y_range)))
-    
-        for y in y_range:
-            x_range = []
-            for c in areas[i]:
-                if c[0] >= y[0] and c[0] <= y[1]:
-                    x_range.append(c[1])
-            x_range = getRanges(list(set(x_range)))
-
-            for x in x_range:
-                distinct_areas.append([y,x])
-
-        new_areas[i] = distinct_areas
-    return new_areas
 
 def fillArea(data,row,col,val):
     filled =[]
@@ -135,6 +106,20 @@ def groupAreas(data):
 
     return area_groups
 
+def getRanges(data):
+    s = e = None
+    r = []
+    for i in sorted(data):
+        if s is None:
+            s = e = i
+        elif i == e or i == e + 1:
+            e = i
+        else:
+            r.append((s, e))
+            s = e = i
+    if s is not None:
+        r.append((s, e))
+    return r
 
 def part1(data):
     result = 0
@@ -153,6 +138,37 @@ def part1(data):
 
 def part2(data):
     result = 0
+    perimeter= get_perimeters(copy.deepcopy(data))
+    distinct_areas = groupAreas(data)
+
+    for a in distinct_areas:
+        a.sort()
+        rows = list(set([i[0] for i in a]))
+        cols = list(set([j[1] for j in a]))
+        
+        for r in rows:
+            r_cols = []
+            r_cols = [x[1] if x[0] == r else -1 for x in a]
+            r_cols = list(set([y if y != -1 else max(r_cols) for y in r_cols]))
+            r_cols.sort()
+
+            r_range=getRanges(r_cols)
+            print(len(r_range))
+        for c in cols:
+            c_rows = []
+            c_rows = [x[0] if x[1] == c else -1 for x in a]
+            c_rows  = list(set([y if y != -1 else max(c_rows ) for y in c_rows ]))
+            c_rows.sort()
+
+            c_range=getRanges(c_rows)
+            print(len(c_range))
+        print('==========')
+
+
+        area_sum = len(a)
+        side_sum = 0
+
+        result = result + (area_sum * side_sum)
     return result
 
 def main():
@@ -162,17 +178,10 @@ def main():
     filename = getFilename()
     data = parseFile(filename)
 
-    part1_result =part1(data)
+    #part1_result =part1(data)
+    #print(part1_result)
 
-    if 'test' not in filename:
-        if part1_result <= 338681:
-            part1_result = 'Incorrect: too low'
-        elif part1_result >=1539588:
-            part1_result = 'Incorrect: too high'
-   
-    print(part1_result)
-
-    #part2_result = part2(data)
-    #print(part2_result)
+    part2_result = part2(data)
+    print(part2_result)
 
 main()
